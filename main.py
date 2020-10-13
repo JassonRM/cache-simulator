@@ -1,5 +1,3 @@
-from Processor import *
-from Cache import *
+from Core import Core
 
 if __name__ == '__main__':
-

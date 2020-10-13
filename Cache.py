@@ -11,13 +11,19 @@ class Cache:
         self.tags2 = [0] * self.size
         self.states1 = [State.INVALID] * self.size
         self.states2 = [State.INVALID] * self.size
+        self.last_used = [False] * self.size
+        self.last_used2 = [False] * self.size
         self.input = None
 
     def read_request(self, address):
         set = address % self.size
         if self.tags1[set] == address // self.size:
+            self.last_used1[set] = True
+            self.last_used2[set] = False
             return self.data1[set], self.states1[set]
         elif self.tags2[set] == address // self.size:
+            self.last_used1[set] = False
+            self.last_used2[set] = True
             return self.data2[set], self.states2[set]
         else:
             return -1
@@ -27,11 +33,29 @@ class Cache:
         if self.tags1[set] == address // self.size:
             self.data1[set] = data
             self.states1[set] = state
+            self.last_used1[set] = True
+            self.last_used2[set] = False
+            return 0
         elif self.tags2[set] == address // self.size:
             self.data2[set] = data
             self.states2[set] = state
-        else:
-            return -1
+            self.last_used1[set] = False
+            self.last_used2[set] = True
+            return 0
+        elif self.last_used2[set]:
+            old_data = self.tags1 * self.size + set, self.data1[set], self.states1[set]
+            self.data1[set] = data
+            self.states1[set] = state
+            self.last_used1[set] = True
+            self.last_used2[set] = False
+            return old_data
+        elif self.last_used1[set]:
+            old_data = self.tags2 * self.size + set, self.data2[set], self.states2[set]
+            self.data2[set] = data
+            self.states2[set] = state
+            self.last_used1[set] = False
+            self.last_used2[set] = True
+            return old_data
 
     def modify_state(self, address, state):
         set = address % self.size
