@@ -5,8 +5,7 @@ from enum import Enum
 class Processor:
     def __init__(self, memory_controller):
         self.running = True
-        self.clk = False
-        self.memoryController = memory_controller
+        self.memory_controller = memory_controller
         self.currentInstruction = None
         self.currentAddress = None
         self.currentData = None
@@ -14,29 +13,26 @@ class Processor:
         self.nextAddress = None
         self.nextData = None
 
-    def run(self):
+    def run(self, clock):
         while self.running:
-            if self.clk:
-                if self.nextInstruction is None:
-                    self.currentInstruction = Instruction(randint(0, 3))
-                    if self.nextInstruction == Instruction.READ:
-                        self.nextAddress = bin(randint(0, 16))
-                    elif self.nextInstruction == Instruction.WRITE:
-                        self.nextAddress = bin(randint(0, 16))
-                        self.nextData = hex(randint(0, 65536))
-                else:
-                    self.currentInstruction = self.nextInstruction
-                    self.currentAddress = self.nextAddress
-                    self.currentData = self.nextData
+            clock.wait()
+            if self.nextInstruction is None:
+                self.currentInstruction = Instruction(randint(0, 3))
+                if self.currentInstruction == Instruction.READ:
+                    self.currentAddress = bin(randint(0, 16))
+                elif self.currentInstruction == Instruction.WRITE:
+                    self.currentAddress = bin(randint(0, 16))
+                    self.currentData = hex(randint(0, 65536))
+            else:
+                self.currentInstruction = self.nextInstruction
+                self.currentAddress = self.nextAddress
+                self.currentData = self.nextData
 
-                if self.nextInstruction == Instruction.READ:
-                    self.memory_controller.readRequest(self.currentAddress)
-                elif self.nextInstruction == Instruction.WRITE:
-                    self.memory_controller.writeRequest(self.currentAddress, self.currentData)
-                self.clk = False
-
-    def clock(self):
-        self.clk = True
+            if self.currentInstruction == Instruction.READ:
+                self.memory_controller.pr_rd(int(self.currentAddress, 2))
+            elif self.currentInstruction == Instruction.WRITE:
+                # print("-------------------------------------------- address ", int(self.currentAddress, 2))
+                self.memory_controller.pr_wr(int(self.currentAddress, 2), self.currentData)
 
     def set_next_instruction(self, instruction):
         tokens = instruction.split()

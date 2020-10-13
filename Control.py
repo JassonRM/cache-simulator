@@ -19,11 +19,11 @@ class Control:
     def pr_wr(self, address, data):
         value = self.cache.read_request(address)
         if value == -1 or value[1] == State.INVALID:
-            self.bus.rd_x(address)
+            self.bus.rd_x(self.id, address)
         elif value == State.SHARED or value == State.OWNED:
-            self.bus.upgr(address)
+            self.bus.upgr(self.id, address)
         old_value = self.cache.write_request(address, data, State.MODIFIED)
-        if old_value[2] == State.MODIFIED or old_value[2] == State.OWNED:
+        if old_value is not None and old_value != 0 and (old_value[2] == State.MODIFIED or old_value[2] == State.OWNED):
             self.bus.flush_wb(old_value[0], old_value[1])
 
     def bus_rd(self, address):
