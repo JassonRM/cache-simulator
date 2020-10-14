@@ -1,22 +1,28 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QMetaObject, pyqtSignal
 from MemoryWidget import MemoryWidget
 from CoreWidget import CoreWidget
+import time
+import threading
 
 
 class Window(QWidget):
+    refresh = pyqtSignal()
+
     def __init__(self, clock, cores, memory):
         super().__init__()
         self.clock = clock
         self.cores = cores
         self.memory = memory
+        self.cores_widgets = []
+        self.memory_widget = None
+        self.running = False
         self.initUI()
 
     def initUI(self):
         self.resize(600, 900)
         self.setWindowTitle("Cache Simulator")
 
-        self.cores_widgets = []
         for core in self.cores:
             self.cores_widgets.append(CoreWidget(core))
 
@@ -24,7 +30,10 @@ class Window(QWidget):
         next_step_btn.clicked.connect(self.next_step_clicked)
         next_n_steps_btn = QPushButton("Next n steps", self)
         play_btn = QPushButton("Play", self)
+        play_btn.clicked.connect(self.play_clicked)
+        self.refresh.connect(self.next_step_clicked)
         stop_btn = QPushButton("Stop", self)
+        stop_btn.clicked.connect(self.stop_clicked)
 
         vbox = QVBoxLayout()
 
@@ -58,3 +67,18 @@ class Window(QWidget):
         self.clock.clear()
         for core_widget in self.cores_widgets:
             core_widget.refresh()
+        self.memory_widget.refresh()
+
+    @pyqtSlot()
+    def play_clicked(self):
+        self.running = True
+        threading.Thread(target=self.play).start()
+
+    def play(self):
+        while self.running:
+            self.refresh.emit()
+            time.sleep(1)
+
+    @pyqtSlot()
+    def stop_clicked(self):
+        self.running = False
