@@ -52,9 +52,9 @@ class CoreWidget(QWidget):
         if self.core.processor.currentInstruction == Instruction.CALC:
             instruction += "calc"
         elif self.core.processor.currentInstruction == Instruction.READ:
-            instruction += "read " + self.core.processor.currentAddress[2:]
+            instruction += "read " + self.core.processor.currentAddress[2:].zfill(4)
         elif self.core.processor.currentInstruction == Instruction.WRITE:
-            instruction += "write " + self.core.processor.currentAddress[2:] \
+            instruction += "write " + self.core.processor.currentAddress[2:].zfill(4) \
                            + " " + self.core.processor.currentData
         self.current_inst_label.setText(instruction)
 

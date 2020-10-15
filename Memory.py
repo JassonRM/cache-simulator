@@ -7,7 +7,7 @@ class Memory:
     write_latency = 5
 
     def __init__(self):
-        self.data = ['0x0000'] * self.size
+        self.data = ['0xFFFF'] * self.size
         self.address = None
         self.latency = 0
         self.input = None
@@ -17,6 +17,7 @@ class Memory:
         self.output = None
         self.updated = threading.Event()
         self.updated.set()
+        self.screen_updated = threading.Event()
 
     def run(self, clock):
         while self.running:
@@ -29,12 +30,14 @@ class Memory:
                     else:
                         self.data[self.address] = self.input
                     self.finished.set()
-            clock.clear()
+            self.screen_updated.clear()
             self.updated.set()
+            clock.clear()
 
     def read_request(self, address):
         self.busy.acquire()
         self.address = address
+        self.screen_updated.wait()
         self.latency = self.read_latency
         self.finished.wait()
         self.finished.clear()

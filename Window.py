@@ -30,6 +30,7 @@ class Window(QWidget):
         next_step_btn.clicked.connect(self.next_step_clicked)
         self.next_n_steps_edit = QLineEdit()
         self.next_n_steps_edit.setPlaceholderText("Number of steps")
+        self.next_n_steps_edit.setFixedWidth(140)
         next_n_steps_btn = QPushButton("Next n steps", self)
         next_n_steps_btn.clicked.connect(self.next_n_steps_clicked)
         play_btn = QPushButton("Play", self)
@@ -78,7 +79,6 @@ class Window(QWidget):
         threading.Thread(target=self.next_n_steps).start()
 
     def next_n_steps(self):
-        print("Working")
         n = int(self.next_n_steps_edit.text())
         for i in range(n):
             if not self.running:

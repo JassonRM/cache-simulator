@@ -47,3 +47,4 @@ class MemoryWidget(QWidget):
                                QTableWidgetItem(self.memory.data[i]))
         self.repaint()
         self.memory.updated.clear()
+        self.memory.screen_updated.set()

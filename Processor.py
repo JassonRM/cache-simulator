@@ -77,7 +77,7 @@ class Processor:
             if not 0 <= address <= 16:
                 raise ValueError("Address out of bounds")
 
-            self.nextAddress = tokens[1]
+            self.nextAddress = bin(address)
         elif tokens[0].lower() == 'write' and len(tokens) == 3:
             self.nextInstruction = Instruction.WRITE
 
@@ -89,7 +89,7 @@ class Processor:
             if not 0 <= address <= 16:
                 raise ValueError("Address out of bounds")
 
-            self.nextAddress = tokens[1]
+            self.nextAddress = bin(address)
 
             try:
                 value = int(tokens[2], 16)
