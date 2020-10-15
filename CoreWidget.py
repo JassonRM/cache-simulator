@@ -60,7 +60,6 @@ class CoreWidget(QWidget):
         self.setLayout(grid)
 
     def refresh(self):
-        print(self.core.processor.currentInstruction)
         instruction = "Current instruction: "
         if self.core.processor.currentInstruction == Instruction.CALC:
             instruction += "calc"
@@ -93,7 +92,16 @@ class CoreWidget(QWidget):
     @pyqtSlot()
     def set_next_instruction(self):
         instruction = self.next_inst_edit.text()
-        self.core.processor.set_next_instruction(instruction)
+        try:
+            self.core.processor.set_next_instruction(instruction)
+        except ValueError as err:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Error")
+            msg.setInformativeText(err.__str__())
+            msg.setWindowTitle("Error")
+            msg.exec_()
+
 
     @pyqtSlot()
     def reset_next_instruction(self):

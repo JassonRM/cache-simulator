@@ -1,4 +1,4 @@
-from numpy.random import *
+from numpy import random
 from enum import Enum
 
 
@@ -17,12 +17,19 @@ class Processor:
         while self.running:
             clock.wait()
             if self.nextInstruction is None:
-                self.currentInstruction = Instruction(randint(0, 3))
+                normal = random.normal(0, 1)
+                if normal < -1:
+                    self.currentInstruction = Instruction.READ
+                elif -1 <= normal <= 1:
+                    self.currentInstruction = Instruction.CALC
+                elif normal > 1:
+                    self.currentInstruction = Instruction.WRITE
+
                 if self.currentInstruction == Instruction.READ:
-                    self.currentAddress = bin(randint(0, 16))
+                    self.currentAddress = bin(random.randint(0, 16))
                 elif self.currentInstruction == Instruction.WRITE:
-                    self.currentAddress = bin(randint(0, 16))
-                    self.currentData = hex(randint(0, 65536))
+                    self.currentAddress = bin(random.randint(0, 16))
+                    self.currentData = hex(random.randint(0, 65536))
             else:
                 self.currentInstruction = self.nextInstruction
                 self.currentAddress = self.nextAddress
@@ -31,7 +38,8 @@ class Processor:
             if self.currentInstruction == Instruction.READ:
                 self.memory_controller.pr_rd(int(self.currentAddress, 2))
             elif self.currentInstruction == Instruction.WRITE:
-                self.memory_controller.pr_wr(int(self.currentAddress, 2), self.currentData)
+                self.memory_controller.pr_wr(int(self.currentAddress, 2),
+                                             self.currentData)
 
     def set_next_instruction(self, instruction):
         tokens = instruction.split()
@@ -39,16 +47,44 @@ class Processor:
             self.nextInstruction = Instruction.CALC
         elif tokens[0].lower() == 'read' and len(tokens) == 2:
             self.nextInstruction = Instruction.READ
+
+            try:
+                address = int(tokens[1], 2)
+            except ValueError:
+                raise ValueError("Address is not binary")
+
+            if not 0 <= address <= 16:
+                raise ValueError("Address out of bounds")
+
             self.nextAddress = tokens[1]
         elif tokens[0].lower() == 'write' and len(tokens) == 3:
             self.nextInstruction = Instruction.WRITE
+
+            try:
+                address = int(tokens[1], 2)
+            except ValueError:
+                raise ValueError("Address is not binary")
+
+            if not 0 <= address <= 16:
+                raise ValueError("Address out of bounds")
+
             self.nextAddress = tokens[1]
+
+            try:
+                value = int(tokens[2], 16)
+            except ValueError:
+                raise ValueError("Value is not hex")
+
+            if not 0 <= value <= 65536:
+                raise ValueError("Value is too large for 16 bits")
+
             self.nextData = tokens[2]
         else:
-            raise ValueError("Invalid instruction")
+            raise ValueError("Invalid instruction name")
 
     def reset_next_instruction(self):
         self.nextInstruction = None
+
 
 class Instruction(Enum):
     CALC = 0

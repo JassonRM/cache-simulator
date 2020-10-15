@@ -21,7 +21,6 @@ class Control:
         if value == -1 or value[1] == State.INVALID:
             self.bus.rd_x(self.id, address)
         elif value[1] == State.SHARED or value[1] == State.OWNED:
-            print("Upgrading")
             self.bus.upgr(self.id, address)
         old_value = self.cache.write_request(address, data, State.MODIFIED)
         if old_value is not None and old_value != 0 and (old_value[2] == State.MODIFIED or old_value[2] == State.OWNED):
@@ -52,6 +51,5 @@ class Control:
 
     def bus_upgr(self, address):
         value = self.cache.read_request(address)
-        print("Upgrading address: ", address, " with value ", value)
         if value != -1 and value[1] != State.INVALID and (value[1] == State.SHARED or value[1] == State.OWNED):
             self.cache.modify_state(address, State.INVALID)
