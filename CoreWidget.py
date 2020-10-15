@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from Processor import Instruction
 from PyQt5.QtCore import pyqtSlot
+from Cache import State
 
 
 class CoreWidget(QWidget):
@@ -24,22 +25,37 @@ class CoreWidget(QWidget):
         self.next_inst_edit = QLineEdit()
         next_inst_btn = QPushButton("Set", self)
         next_inst_btn.clicked.connect(self.set_next_instruction)
+        reset_btn = QPushButton("Reset", self)
+        reset_btn.clicked.connect(self.reset_next_instruction)
         grid.addWidget(next_inst_label, 3, 0)
         grid.addWidget(self.next_inst_edit, 3, 1)
         grid.addWidget(next_inst_btn, 3, 2)
+        grid.addWidget(reset_btn, 3, 3)
 
         self.cache_table = QTableWidget()
         self.cache_table.setRowCount(self.core.cache.size)
-        self.cache_table.setColumnCount(2)
+        self.cache_table.setColumnCount(6)
 
-        self.cache_table.setHorizontalHeaderLabels(["Set 1", "Set 2"])
+        self.cache_table.setHorizontalHeaderLabels(["Tags 1", "Way 1", "States 1", "Tags 2", "Way 2", "States 2"])
 
         for i in range(self.core.cache.size):
             self.cache_table.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
-            self.cache_table.setItem(i, 0, QTableWidgetItem(self.core.cache.data1[i]))
-            self.cache_table.setItem(i, 1, QTableWidgetItem(self.core.cache.data2[i]))
+            self.cache_table.setItem(i, 0, QTableWidgetItem(
+                bin(self.core.cache.tags1[i])[2:].zfill(3)))
+            self.cache_table.setItem(i, 1, QTableWidgetItem(
+                self.core.cache.data1[i]))
+            self.cache_table.setItem(i, 2, QTableWidgetItem(
+                self.get_state_letter(self.core.cache.states1[i])))
+            self.cache_table.setItem(i, 3, QTableWidgetItem(
+                bin(self.core.cache.tags2[i])[2:].zfill(3)))
+            self.cache_table.setItem(i, 4, QTableWidgetItem(
+                self.core.cache.data2[i]))
+            self.cache_table.setItem(i, 5, QTableWidgetItem(
+                self.get_state_letter(self.core.cache.states2[i])))
 
-        grid.addWidget(self.cache_table, 4, 0, self.core.cache.size, 3)
+        self.cache_table.resizeColumnsToContents()
+
+        grid.addWidget(self.cache_table, 4, 0, self.core.cache.size, 4)
 
         self.setLayout(grid)
 
@@ -57,12 +73,40 @@ class CoreWidget(QWidget):
         self.current_inst_label.setText(instruction)
 
         for i in range(self.core.cache.size):
-            self.cache_table.setItem(i, 0, QTableWidgetItem(self.core.cache.data1[i]))
-            self.cache_table.setItem(i, 1, QTableWidgetItem(self.core.cache.data2[i]))
+            self.cache_table.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
+            self.cache_table.setItem(i, 0, QTableWidgetItem(
+                bin(self.core.cache.tags1[i])[2:].zfill(3)))
+            self.cache_table.setItem(i, 1, QTableWidgetItem(
+                self.core.cache.data1[i]))
+            self.cache_table.setItem(i, 2, QTableWidgetItem(
+                self.get_state_letter(self.core.cache.states1[i])))
+            self.cache_table.setItem(i, 3, QTableWidgetItem(
+                bin(self.core.cache.tags2[i])[2:].zfill(3)))
+            self.cache_table.setItem(i, 4, QTableWidgetItem(
+                self.core.cache.data2[i]))
+            self.cache_table.setItem(i, 5, QTableWidgetItem(
+                self.get_state_letter(self.core.cache.states2[i])))
 
+        self.cache_table.resizeColumnsToContents()
         self.repaint()
 
     @pyqtSlot()
     def set_next_instruction(self):
         instruction = self.next_inst_edit.text()
         self.core.processor.set_next_instruction(instruction)
+
+    @pyqtSlot()
+    def reset_next_instruction(self):
+        self.core.processor.reset_next_instruction()
+
+    def get_state_letter(self, state):
+        if state == State.MODIFIED:
+            return "M"
+        elif state == State.OWNED:
+            return "O"
+        elif state == State.EXCLUSIVE:
+            return "E"
+        elif state == State.SHARED:
+            return "S"
+        elif state == State.INVALID:
+            return "I"

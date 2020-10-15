@@ -24,8 +24,8 @@ def main():
     mem_thread.start()
 
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
-    app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     window = Window(clock, cores, memory)
     sys.exit(app.exec_())
 

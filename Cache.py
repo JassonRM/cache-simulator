@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class Cache:
-    size = 4
+    size = 2
 
     def __init__(self):
         self.data1 = ['0x0000'] * self.size

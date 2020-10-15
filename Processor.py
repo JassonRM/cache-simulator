@@ -31,7 +31,6 @@ class Processor:
             if self.currentInstruction == Instruction.READ:
                 self.memory_controller.pr_rd(int(self.currentAddress, 2))
             elif self.currentInstruction == Instruction.WRITE:
-                # print("-------------------------------------------- address ", int(self.currentAddress, 2))
                 self.memory_controller.pr_wr(int(self.currentAddress, 2), self.currentData)
 
     def set_next_instruction(self, instruction):
@@ -48,6 +47,8 @@ class Processor:
         else:
             raise ValueError("Invalid instruction")
 
+    def reset_next_instruction(self):
+        self.nextInstruction = None
 
 class Instruction(Enum):
     CALC = 0

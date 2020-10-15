@@ -35,6 +35,7 @@ class Memory:
         self.finished.wait()
         self.finished.clear()
         self.busy.release()
+        return self.output
 
     def write_request(self, address, data):
         self.busy.acquire()

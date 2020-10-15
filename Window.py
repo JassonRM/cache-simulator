@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import pyqtSlot, QMetaObject, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from MemoryWidget import MemoryWidget
 from CoreWidget import CoreWidget
 import time
@@ -20,7 +20,7 @@ class Window(QWidget):
         self.initUI()
 
     def initUI(self):
-        self.resize(600, 900)
+        self.resize(800, 600)
         self.setWindowTitle("Cache Simulator")
 
         for core in self.cores:
@@ -28,7 +28,10 @@ class Window(QWidget):
 
         next_step_btn = QPushButton("Next step", self)
         next_step_btn.clicked.connect(self.next_step_clicked)
+        self.next_n_steps_edit = QLineEdit()
+        self.next_n_steps_edit.setPlaceholderText("Number of steps")
         next_n_steps_btn = QPushButton("Next n steps", self)
+        next_n_steps_btn.clicked.connect(self.next_n_steps_clicked)
         play_btn = QPushButton("Play", self)
         play_btn.clicked.connect(self.play_clicked)
         self.refresh.connect(self.next_step_clicked)
@@ -52,6 +55,7 @@ class Window(QWidget):
 
         btn_hbox = QHBoxLayout()
         btn_hbox.addWidget(next_step_btn)
+        btn_hbox.addWidget(self.next_n_steps_edit)
         btn_hbox.addWidget(next_n_steps_btn)
         btn_hbox.addWidget(play_btn)
         btn_hbox.addWidget(stop_btn)
@@ -68,6 +72,20 @@ class Window(QWidget):
         for core_widget in self.cores_widgets:
             core_widget.refresh()
         self.memory_widget.refresh()
+
+    @pyqtSlot()
+    def next_n_steps_clicked(self):
+        self.running = True
+        threading.Thread(target=self.next_n_steps).start()
+
+    def next_n_steps(self):
+        print("Working")
+        n = int(self.next_n_steps_edit.text())
+        for i in range(n):
+            if not self.running:
+                return
+            self.refresh.emit()
+            time.sleep(1)
 
     @pyqtSlot()
     def play_clicked(self):
