@@ -68,7 +68,6 @@ class Window(QWidget):
     @pyqtSlot()
     def next_step_clicked(self):
         self.clock.set()
-        self.clock.clear()
         for core_widget in self.cores_widgets:
             core_widget.refresh()
         self.memory_widget.refresh()

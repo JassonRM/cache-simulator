@@ -11,7 +11,12 @@ class Control:
         value = self.cache.read_request(address)
         if value == -1 or value[1] == State.INVALID:
             response = self.bus.rd(self.id, address)
-            self.cache.write_request(address, response[0], response[1])
+            old_value = self.cache.write_request(address, response[0],
+                                                 response[1])
+            if old_value is not None and old_value != 0 and (
+                    old_value[2] == State.MODIFIED or old_value[
+                2] == State.OWNED):
+                self.bus.flush_wb(old_value[0], old_value[1])
             return response[0]
         else:
             return value[0]
@@ -23,7 +28,8 @@ class Control:
         elif value[1] == State.SHARED or value[1] == State.OWNED:
             self.bus.upgr(self.id, address)
         old_value = self.cache.write_request(address, data, State.MODIFIED)
-        if old_value is not None and old_value != 0 and (old_value[2] == State.MODIFIED or old_value[2] == State.OWNED):
+        if old_value is not None and old_value != 0 and (
+                old_value[2] == State.MODIFIED or old_value[2] == State.OWNED):
             self.bus.flush_wb(old_value[0], old_value[1])
 
     def bus_rd(self, address):
@@ -44,12 +50,14 @@ class Control:
         value = self.cache.read_request(address)
         if value != -1 and value[1] != State.INVALID:
             self.cache.modify_state(address, State.INVALID)
-            if value[1] == State.EXCLUSIVE or value[1] == State.MODIFIED or value[1] == State.OWNED:
+            if value[1] == State.EXCLUSIVE or value[1] == State.MODIFIED or \
+                    value[1] == State.OWNED:
                 return value[0]
             else:
                 return -1
 
     def bus_upgr(self, address):
         value = self.cache.read_request(address)
-        if value != -1 and value[1] != State.INVALID and (value[1] == State.SHARED or value[1] == State.OWNED):
+        if value != -1 and value[1] != State.INVALID and (
+                value[1] == State.SHARED or value[1] == State.OWNED):
             self.cache.modify_state(address, State.INVALID)

@@ -43,7 +43,8 @@ class Cache:
             self.last_used2[set] = True
             return 0
         elif self.last_used2[set]:
-            old_data = [self.tags1[set] * self.size + set, self.data1[set], self.states1[set]]
+            old_data = [self.tags1[set] * self.size + set, self.data1[set],
+                        self.states1[set]]
             self.tags1[set] = address // self.size
             self.data1[set] = data
             self.states1[set] = state
@@ -51,7 +52,8 @@ class Cache:
             self.last_used2[set] = False
             return old_data
         elif self.last_used1[set]:
-            old_data = [self.tags2[set] * self.size + set, self.data2[set], self.states2[set]]
+            old_data = [self.tags2[set] * self.size + set, self.data2[set],
+                        self.states2[set]]
             self.tags2[set] = address // self.size
             self.data2[set] = data
             self.states2[set] = state

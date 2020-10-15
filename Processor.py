@@ -1,5 +1,6 @@
 from numpy import random
 from enum import Enum
+import threading
 
 
 class Processor:
@@ -12,6 +13,9 @@ class Processor:
         self.nextInstruction = None
         self.nextAddress = None
         self.nextData = None
+        self.instruction_ready = threading.Event()
+        self.instruction_ready.set()
+        self.using_mem = False
 
     def run(self, clock):
         while self.running:
@@ -26,20 +30,37 @@ class Processor:
                     self.currentInstruction = Instruction.WRITE
 
                 if self.currentInstruction == Instruction.READ:
-                    self.currentAddress = bin(random.randint(0, 16))
+                    address = random.poisson(4)
+                    if address > 15:
+                        address == 15
+                    self.currentAddress = bin(address)
+
                 elif self.currentInstruction == Instruction.WRITE:
-                    self.currentAddress = bin(random.randint(0, 16))
+                    address = random.poisson(4)
+                    if address > 15:
+                        address == 15
+                    self.currentAddress = bin(address)
+
                     self.currentData = hex(random.randint(0, 65536))
             else:
                 self.currentInstruction = self.nextInstruction
                 self.currentAddress = self.nextAddress
                 self.currentData = self.nextData
 
+            clock.clear()
+            self.instruction_ready.set()
+
             if self.currentInstruction == Instruction.READ:
+                self.using_mem = True
                 self.memory_controller.pr_rd(int(self.currentAddress, 2))
+                self.using_mem = False
+                self.instruction_ready.set()
             elif self.currentInstruction == Instruction.WRITE:
+                self.using_mem = True
                 self.memory_controller.pr_wr(int(self.currentAddress, 2),
                                              self.currentData)
+                self.using_mem = False
+                self.instruction_ready.set()
 
     def set_next_instruction(self, instruction):
         tokens = instruction.split()

@@ -15,6 +15,8 @@ class Memory:
         self.finished = threading.Event()
         self.busy = threading.Lock()
         self.output = None
+        self.updated = threading.Event()
+        self.updated.set()
 
     def run(self, clock):
         while self.running:
@@ -27,6 +29,8 @@ class Memory:
                     else:
                         self.data[self.address] = self.input
                     self.finished.set()
+            clock.clear()
+            self.updated.set()
 
     def read_request(self, address):
         self.busy.acquire()

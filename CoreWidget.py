@@ -36,30 +36,18 @@ class CoreWidget(QWidget):
         self.cache_table.setRowCount(self.core.cache.size)
         self.cache_table.setColumnCount(6)
 
-        self.cache_table.setHorizontalHeaderLabels(["Tags 1", "Way 1", "States 1", "Tags 2", "Way 2", "States 2"])
+        self.cache_table.setHorizontalHeaderLabels(
+            ["Tags 1", "Way 1", "States 1", "Tags 2", "Way 2", "States 2"])
 
-        for i in range(self.core.cache.size):
-            self.cache_table.setVerticalHeaderItem(i, QTableWidgetItem(str(i)))
-            self.cache_table.setItem(i, 0, QTableWidgetItem(
-                bin(self.core.cache.tags1[i])[2:].zfill(3)))
-            self.cache_table.setItem(i, 1, QTableWidgetItem(
-                self.core.cache.data1[i]))
-            self.cache_table.setItem(i, 2, QTableWidgetItem(
-                self.get_state_letter(self.core.cache.states1[i])))
-            self.cache_table.setItem(i, 3, QTableWidgetItem(
-                bin(self.core.cache.tags2[i])[2:].zfill(3)))
-            self.cache_table.setItem(i, 4, QTableWidgetItem(
-                self.core.cache.data2[i]))
-            self.cache_table.setItem(i, 5, QTableWidgetItem(
-                self.get_state_letter(self.core.cache.states2[i])))
-
-        self.cache_table.resizeColumnsToContents()
+        self.refresh()
 
         grid.addWidget(self.cache_table, 4, 0, self.core.cache.size, 4)
 
         self.setLayout(grid)
 
     def refresh(self):
+        if not self.core.processor.using_mem:
+            self.core.processor.instruction_ready.wait()
         instruction = "Current instruction: "
         if self.core.processor.currentInstruction == Instruction.CALC:
             instruction += "calc"
@@ -68,7 +56,6 @@ class CoreWidget(QWidget):
         elif self.core.processor.currentInstruction == Instruction.WRITE:
             instruction += "write " + self.core.processor.currentAddress[2:] \
                            + " " + self.core.processor.currentData
-
         self.current_inst_label.setText(instruction)
 
         for i in range(self.core.cache.size):
@@ -88,6 +75,7 @@ class CoreWidget(QWidget):
 
         self.cache_table.resizeColumnsToContents()
         self.repaint()
+        self.core.processor.instruction_ready.clear()
 
     @pyqtSlot()
     def set_next_instruction(self):
@@ -101,7 +89,6 @@ class CoreWidget(QWidget):
             msg.setInformativeText(err.__str__())
             msg.setWindowTitle("Error")
             msg.exec_()
-
 
     @pyqtSlot()
     def reset_next_instruction(self):
