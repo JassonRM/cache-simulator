@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import *
 from Processor import Instruction
 from PyQt5.QtCore import pyqtSlot
 from Cache import State
+import time
 
 
 class CoreWidget(QWidget):
@@ -46,6 +47,7 @@ class CoreWidget(QWidget):
         self.setLayout(grid)
 
     def refresh(self):
+        time.sleep(0.01)
         if not self.core.processor.using_mem:
             self.core.processor.instruction_ready.wait()
         instruction = "Current instruction: "

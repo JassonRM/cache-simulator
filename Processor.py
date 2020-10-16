@@ -61,6 +61,7 @@ class Processor:
                                              self.currentData)
                 self.using_mem = False
                 self.instruction_ready.set()
+                self.instruction_ready.set()
 
     def set_next_instruction(self, instruction):
         tokens = instruction.split()
